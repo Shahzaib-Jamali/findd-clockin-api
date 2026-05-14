@@ -12,6 +12,26 @@ const MONGODB_URI = process.env.MONGODB_URI || '';
 
 app.use(express.json());
 
+// Root route
+app.get('/', (_req, res) => {
+  res.json({
+    name: 'Findd Clock-In API',
+    description: 'GPS-verified workforce clock-in/clock-out system with fraud detection',
+    endpoints: {
+      health: 'GET /health',
+      workers: 'GET /api/workers',
+      createWorker: 'POST /api/workers',
+      sites: 'GET /api/sites',
+      createSite: 'POST /api/sites',
+      clockIn: 'POST /api/clock-in',
+      clockOut: 'POST /api/clock-out',
+      punchHistory: 'GET /api/punches/:workerId',
+      hoursReport: 'GET /api/report/hours',
+      flagsReport: 'GET /api/report/flags',
+    },
+  });
+});
+
 // Mount all API routes under /api
 app.use('/api', router);
 
