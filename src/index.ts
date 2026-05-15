@@ -3,6 +3,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import rateLimit from 'express-rate-limit';
 import router from './routes';
 
 dotenv.config();
@@ -11,7 +12,17 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const MONGODB_URI = process.env.MONGODB_URI || '';
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    'https://findd-clockin-web-production.up.railway.app',
+    'http://localhost:5173',
+  ],
+}));
+app.use(rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: { error: 'Too many requests, please try again later' },
+}));
 app.use(express.json());
 
 // Root route
@@ -40,6 +51,12 @@ app.use('/api', router);
 // Health check endpoint — lets Railway know the server is alive
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Global error handler
+app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error('Unhandled error:', err.message);
+  res.status(500).json({ error: 'Internal server error' });
 });
 
 async function start() {

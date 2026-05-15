@@ -13,6 +13,7 @@ router.post('/workers', async (req: Request, res: Response) => {
     const worker = await WorkerModel.create(req.body);
     res.status(201).json(worker);
   } catch (error) {
+    console.error(error);
     res.status(400).json({ error: 'Failed to create worker' });
   }
 });
@@ -23,6 +24,7 @@ router.get('/workers', async (_req: Request, res: Response) => {
     const workers = await WorkerModel.find();
     res.json(workers);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Failed to fetch workers' });
   }
 });
@@ -35,6 +37,7 @@ router.post('/sites', async (req: Request, res: Response) => {
     const site = await SiteModel.create(req.body);
     res.status(201).json(site);
   } catch (error) {
+    console.error(error);
     res.status(400).json({ error: 'Failed to create site' });
   }
 });
@@ -45,6 +48,7 @@ router.get('/sites', async (_req: Request, res: Response) => {
     const sites = await SiteModel.find();
     res.json(sites);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Failed to fetch sites' });
   }
 });
@@ -98,6 +102,7 @@ router.post('/clock-in', async (req: Request, res: Response) => {
 
     res.status(201).json({ punch, message });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Failed to clock in' });
   }
 });
@@ -106,6 +111,12 @@ router.post('/clock-in', async (req: Request, res: Response) => {
 router.post('/clock-out', async (req: Request, res: Response) => {
   try {
     const { workerId, siteId, latitude, longitude } = req.body as ClockInRequest;
+
+    const worker = await WorkerModel.findOne({ workerId });
+    if (!worker) {
+      res.status(404).json({ error: 'Worker not found' });
+      return;
+    }
 
     const site = await SiteModel.findOne({ siteId });
     if (!site) {
@@ -138,6 +149,7 @@ router.post('/clock-out', async (req: Request, res: Response) => {
 
     res.status(201).json({ punch, message });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Failed to clock out' });
   }
 });
@@ -152,6 +164,7 @@ router.get('/punches/:workerId', async (req: Request, res: Response) => {
     });
     res.json(punches);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Failed to fetch punches' });
   }
 });
@@ -167,6 +180,7 @@ router.get('/report/hours', async (_req: Request, res: Response) => {
     ]);
     res.json(report);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Failed to generate report' });
   }
 });
@@ -177,6 +191,7 @@ router.get('/report/flags', async (_req: Request, res: Response) => {
     const flagged = await PunchModel.find({ flagged: true }).sort({ timestamp: -1 });
     res.json({ count: flagged.length, punches: flagged });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Failed to fetch flagged punches' });
   }
 });
